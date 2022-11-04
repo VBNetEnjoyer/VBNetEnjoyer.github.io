@@ -1,11 +1,8 @@
-let playgroundSize = [
-    {},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},
-]
-
-
-function lastElement(array){return array[array.length-1]}
-
-function preLastElement(array){return array[array.length-2]}
+function countPlaygroundSize(cols, rows){
+    return cols*rows;
+}
+const DEF_ROWS = 4;
+const DEF_COLS = 4;
 
 function createCard(id){
     const card = document.createElement('div');
@@ -14,7 +11,10 @@ function createCard(id){
     }
 
     card.classList.add('card');
-    card.innerHTML = `<p>${id.number}</p>`;
+    const numberNode = document.createElement('p');
+    numberNode.textContent = id.number;
+
+    card.append(numberNode);
     
     return card;
 }
@@ -26,12 +26,11 @@ function createPlayground(){
 
     playground.addEventListener('click', function(e){
         if(e.target.closest('.card.opened')){
-            console.log(pressedCards);
             return
         }
         if(e.target.closest('.card')){
-            e.target.closest('.card').classList.toggle('pressed')
-            checkPressedCards()
+            e.target.closest('.card').classList.toggle('pressed');
+            checkPressedCards();
         }
         
     })
@@ -39,77 +38,146 @@ function createPlayground(){
     return playground;
 }
 
-let pressedCards = 0;
-function checkPressedCards(){
-    pressedCards++
-    let pressedCardsElements = document.querySelectorAll('.pressed');
-    console.log(pressedCards)
-    console.log(pressedCardsElements)
 
-    if((pressedCards == 2) && (pressedCardsElements.length == 2)){
-        if(lastElement(pressedCardsElements).id == preLastElement(pressedCardsElements).id){
-            for(let element of pressedCardsElements){
-                element.classList.add('opened');
-                element.classList.remove('pressed');
-            }
-        }
-        pressedCards = 0;
-        for(let element of pressedCardsElements){
-            element.classList.remove('pressed')
-            element.classList.add('pressed-anim')
-            setTimeout(() => {
-                element.classList.remove('pressed-anim')
-            }, 1000);
-        }
+let pressedCardsCount = 0;
+function checkPressedCards(){
+    pressedCardsCount++
+    let pressedCards = document.querySelectorAll('.pressed');
+
+    if(pressedCards.length == 0) pressedCardsCount = 0;
+    if((pressedCardsCount != 2) || (pressedCards.length != 2)) return;
+    if(lastElementOfArray(pressedCards).id == preLastElementOfArray(pressedCards).id){
+        checkCardsAsOpened(pressedCards)
     }
-    if(pressedCardsElements.length == 0){
-        pressedCards = 0;
-    } 
+    pressedCardsCount = 0;
+    hideElements(pressedCards)
+}
+function hideElements(elementsToHide){
+    for(let element of elementsToHide){
+        element.classList.remove('pressed');
+        element.classList.add('uncorrect');
+        setTimeout(() => {
+            element.classList.remove('uncorrect');
+        }, 1000);
+    }   
+}
+function checkCardsAsOpened(elementToCheck){
+    for(let element of elementToCheck){
+        element.classList.add('opened');
+        element.classList.remove('pressed');
+    }
 }
 
-function createNumbersForCard(){        
+function createNumbersForCard(playgroundSize){        
     let numbers = [];
-    const arraySize = playgroundSize.length/2
+    const arraySize = playgroundSize/2
     console.log(arraySize)
     for(let i = 0; i < arraySize; i++){
         let num = Math.round(Math.random()*100);
         numbers.push(num);
     }
-    numbers = [...numbers, ...numbers]
-    console.log(numbers);
+    numbers = [...numbers, ...numbers];
     let newNumbers = shuffleArray(numbers);
-    console.log(newNumbers);
-    return numbers;
+    return newNumbers;
 }
+function createSettings(){
+    const settingsContainer = document.createElement('div');
+    settingsContainer.classList.add('settings');
+
+    const colsSettings = document.createElement('select');
+    colsSettings.id = 'cols-settings';
+    const colsLabel = document.createElement('label');
+    colsLabel.for = 'cols-settings';
+    colsLabel.textContent = "Выберите количество столбцов"
+    const rowsSettings = document.createElement('select');
+    rowsSettings.id = 'cols-settings';
+    const rowsLabel = document.createElement('label');
+    rowsLabel.for = 'rows-settings';
+    rowsLabel.textContent = "Выберите количество строк";
+    const saveButton = document.createElement('button');
+    saveButton.textContent = "SAVE"
+
+    const rowsAndColsElements = [2,3,4,5,6,7,8,9,10];
+    for(let element of rowsAndColsElements){
+        const option = document.createElement('option');
+        option.textContent = element;
+        option.value = element;
+        if(element == 4){
+            option.setAttribute('selected',true)
+        }
+        rowsSettings.append(option.cloneNode(true));
+        colsSettings.append(option.cloneNode(true));
+    }
+
+    settingsContainer.append(rowsLabel);
+    settingsContainer.append(rowsSettings);
+    settingsContainer.append(colsLabel);
+    settingsContainer.append(colsSettings);
+    settingsContainer.append(saveButton);
+
+    return{
+        settingsContainer,
+        rowsSettings,
+        colsSettings,
+        saveButton,
+    }
+}
+
 
 function createApp(){
     const playground = createPlayground();
+    const settings = createSettings();
     const app = document.querySelector('#app');
-    let numbersForCards = createNumbersForCard();
+
+    settings.settingsContainer.addEventListener(`click`,(e)=>{
+        if(e.target.closest('button')){
+            let rowsValue = settings.rowsSettings.value;
+            let rowsStringValue = '';
+            let colsValue = settings.colsSettings.value;
+            let colsStringValue = '';
+            for(let i = 0; i < rowsValue; i++){
+                rowsStringValue = rowsStringValue+"1fr ";
+            }
+            for(let i = 0; i < colsValue; i++){
+                colsStringValue = colsStringValue+"1fr ";
+            }
+            playground.style.gridTemplateRows = rowsStringValue.trim();
+            playground.style.gridTemplateColumns = colsStringValue.trim();
+            updatePlaygroundCards(playground, colsValue, rowsValue)
+        }
+    })
     
-
-    for(let i in playgroundSize){
-        playgroundSize[i].number = numbersForCards[i];
-        playground.append(createCard(playgroundSize[i]));
-        
-    }
-
+    updatePlaygroundCards(playground)
+    app.append(settings.settingsContainer)
     app.append(playground);
-    createNumbersForCard()
-
-    observeVictory()
+    createNumbersForCard();
+    observeVictory();
 }
-createApp();
+window.createApp = createApp;
 
-function shuffleArray(array){
-    let shuffledArray = array.sort((a, b) => 0.5 - Math.random());
-    return shuffledArray;
+function updatePlaygroundCards(playground, cols=DEF_COLS, rows=DEF_ROWS){
+    while(playground.firstChild){
+        playground.removeChild(playground.firstChild);
+    }
+    let playgroundSize = countPlaygroundSize(cols, rows);
+    let numbersForCards = createNumbersForCard(playgroundSize);
+    for(let i in numbersForCards){
+        let id = {number:numbersForCards[i]};
+        playground.append(createCard(id));
+    }
 }
+
+function shuffleArray(array){return array.sort((a, b) => 0.5 - Math.random())};
+
+function lastElementOfArray(array){return array[array.length-1]}
+
+function preLastElementOfArray(array){return array[array.length-2]}
 
 function observeVictory(){
     const allUnlockedElements = document.getElementsByClassName('opened');
+    const allCards = document.getElementsByClassName('card')
     let victory = setInterval(() => {
-        if(allUnlockedElements.length == playgroundSize.length){
+        if(allUnlockedElements.length == allCards.length){
             alert('Ура, победа');
             clearInterval(victory);
         }

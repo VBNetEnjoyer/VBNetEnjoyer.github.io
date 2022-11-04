@@ -1,18 +1,29 @@
-
-
+body{
+    font-size: 24px;
+    font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+}
 .container{
     height: 100%;
-    display: flex;
-    max-width: 900px;
+    max-width: 1130px;
     margin: 0 auto;
+    display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
+    padding: 0 10px 20px 10px;
 }
-
+select{
+    margin: 0 10px;
+    font-weight: 700;
+    font-size: inherit;
+}
+.settings{
+    padding: 20px;
+}
 .card{
     box-shadow: 0 0 5px black;
-    min-width: 125px;
-    min-height: 175px;
+    min-width: 1px;
+    min-height: 1px;
     background-color: #202020;
     display: flex;
     justify-content: center;
@@ -22,32 +33,46 @@
     font-weight: 700;
 }
 .card>p{
-    display: none;
+    visibility: hidden;
 }
 
 .playground{
+    flex: 1 1 auto;
+    height: 100%;
+    width: 100%;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
-    gap: 8px;
+    gap: 16px;
 }
 .card.pressed{
     background-color: #808080;
     box-shadow: 0 0 10px #202020;
 }
-.card.pressed-anim{
-    background-color: #808080;
-    box-shadow: 0 0 10px #202020;
+.card.uncorrect{
+    background-color: rgb(134, 33, 33);
+    box-shadow: 0 0 10px rgb(134, 33, 33);
 }
-.card.pressed-anim>p{
-    display: block;
+.card.uncorrect>p{
+    visibility: visible;
 }
 .card.pressed>p{
-    display: block;
+    visibility: visible;
 }
 .card.opened{
     background-color: green;
     box-shadow: 0 0 5px green;
 }
 .card.opened>p{
-    display: block;
+    visibility: visible;
+}
+button{
+    padding: 10px 20px;
+    font-size: 24px;
+    font-weight: 700;
+    border-radius: 10px;
+    background-color: rgb(98, 98, 189);
+    color: black;
+}
+button:hover{
+    background-color: rgb(77, 77, 180);
 }
