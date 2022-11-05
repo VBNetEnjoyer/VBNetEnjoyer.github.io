@@ -322,7 +322,7 @@ function createFinallDialog(isWin){
     if(isWin){
         finallDialogTitle.textContent = "Победа";
         finallDialogTitle.classList.add('green');
-        finallDialogText.textContent = `Поздравля вы нашли все пары. 
+        finallDialogText.textContent = `Поздравляю, вы нашли все пары. 
         Нажмите на кнопку, чтобы вернуться в главное меню`;
     } else {
         finallDialogTitle.textContent = "Поражение";
