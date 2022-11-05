@@ -323,12 +323,12 @@ function createFinallDialog(isWin){
         finallDialogTitle.textContent = "Победа";
         finallDialogTitle.classList.add('green');
         finallDialogText.textContent = `Поздравля вы нашли все пары. 
-        Нажмите на кнопку что бы вернуться в главное меню`;
+        Нажмите на кнопку, чтобы вернуться в главное меню`;
     } else {
         finallDialogTitle.textContent = "Поражение";
         finallDialogTitle.classList.add('red');
         finallDialogText.textContent = `Время вышло. Вы не смогли найти все пары за отведенное время. 
-        Нажмите на кнопку что бы вернуться в главное меню`;
+        Нажмите на кнопку, чтобы вернуться в главное меню`;
     }
 
     finallDialogBody.append(finallDialogTitle);
