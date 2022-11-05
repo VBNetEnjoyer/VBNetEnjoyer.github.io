@@ -19,6 +19,55 @@ function createCard(id){
     return card;
 }
 
+function createTimer(){
+    const timerWrapper = document.createElement('div');
+    const timerCheckBox = document.createElement('input');
+    const timerCheckBoxLabel = document.createElement('label');
+    
+    timerCheckBoxLabel.setAttribute('for','timerCheckBox');
+    timerCheckBoxLabel.textContent = 'Включить таймер';
+
+    timerWrapper.style.cssText= `
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    `;
+
+    timerCheckBox.type = 'checkbox';
+    timerCheckBox.id = 'timerCheckBox';
+    timerCheckBox.style.marginRight = "8px";
+
+    timerWrapper.append(timerCheckBox);
+    timerWrapper.append(timerCheckBoxLabel);
+
+    function startTimer(){
+        while(timerWrapper.firstChild){
+            timerWrapper.removeChild(timerWrapper.firstChild)
+        }
+        const timerText = document.createElement('p');
+        const timerCounter = document.createElement('span');
+        timerText.textContent = `Таймер: `;
+        timerText.append(timerCounter);
+        timerCounter.textContent = 60;
+        let timerInterval = setInterval(()=>{
+            if(+timerCounter.textContent == 1) clearInterval(timerInterval);
+            timerCounter.textContent = +timerCounter.textContent - 1;
+        },1000)
+
+        timerWrapper.append(timerText);
+    }
+    function hideTimer(){
+        timerWrapper.style.display = 'none'
+    }
+
+    return{
+        timerWrapper,
+        timerCheckBox,
+        startTimer,
+        hideTimer,
+    }
+}
+
 function createPlayground(){
     const playground = document.createElement('div');
 
@@ -32,12 +81,10 @@ function createPlayground(){
             e.target.closest('.card').classList.toggle('pressed');
             checkPressedCards();
         }
-        
     })
 
     return playground;
 }
-
 
 let pressedCardsCount = 0;
 function checkPressedCards(){
@@ -47,12 +94,13 @@ function checkPressedCards(){
     if(pressedCards.length == 0) pressedCardsCount = 0;
     if((pressedCardsCount != 2) || (pressedCards.length != 2)) return;
     if(lastElementOfArray(pressedCards).id == preLastElementOfArray(pressedCards).id){
-        checkCardsAsOpened(pressedCards);
+        markCardsAsOpened(pressedCards);
     }
     pressedCardsCount = 0;
-    hideElements(pressedCards);
+    markCardsAsUncorrect(pressedCards);
 }
-function hideElements(elementsToHide){
+
+function markCardsAsUncorrect(elementsToHide){
     for(let element of elementsToHide){
         element.classList.remove('pressed');
         element.classList.add('uncorrect');
@@ -61,7 +109,8 @@ function hideElements(elementsToHide){
         }, 1000);
     }   
 }
-function checkCardsAsOpened(elementToCheck){
+
+function markCardsAsOpened(elementToCheck){
     for(let element of elementToCheck){
         element.classList.add('opened');
         element.classList.remove('pressed');
@@ -79,6 +128,7 @@ function createNumbersForCard(playgroundSize){
     let newNumbers = shuffleArray(numbers);
     return newNumbers;
 }
+
 function createSettings(){
     const settingsContainer = document.createElement('div');
     settingsContainer.classList.add('settings');
@@ -86,15 +136,15 @@ function createSettings(){
     const colsSettings = document.createElement('select');
     colsSettings.id = 'cols-settings';
     const colsLabel = document.createElement('label');
-    colsLabel.for = 'cols-settings';
+    colsLabel.setAttribute('for','cols-settings');
     colsLabel.textContent = "Выберите количество столбцов";
     const rowsSettings = document.createElement('select');
-    rowsSettings.id = 'cols-settings';
+    rowsSettings.id = 'rows-settings';
     const rowsLabel = document.createElement('label');
-    rowsLabel.for = 'rows-settings';
+    rowsLabel.setAttribute('for','rows-settings');
     rowsLabel.textContent = "Выберите количество строк";
     const saveButton = document.createElement('button');
-    saveButton.textContent = "SAVE";
+    saveButton.textContent = "Save and start";
 
     const rowsAndColsElements = [2,3,4,5,6,7,8,9,10];
     for(let element of rowsAndColsElements){
@@ -122,11 +172,11 @@ function createSettings(){
     }
 }
 
-
 function createApp(){
     const playground = createPlayground();
     const settings = createSettings();
     const app = document.querySelector('#app');
+    const timer = createTimer();
 
     settings.settingsContainer.addEventListener(`click`,(e)=>{
         if(e.target.closest('button')){
@@ -142,17 +192,19 @@ function createApp(){
             }
             playground.style.gridTemplateRows = rowsStringValue.trim();
             playground.style.gridTemplateColumns = colsStringValue.trim();
+            timer.timerCheckBox.checked ? timer.startTimer() : timer.hideTimer();
             updatePlaygroundCards(playground, colsValue, rowsValue);
         }
     })
     
     updatePlaygroundCards(playground);
+    settings.settingsContainer.append(timer.timerWrapper);
     app.append(settings.settingsContainer);
     app.append(playground);
     createNumbersForCard();
     observeVictory();
 }
-window.createApp = createApp;
+
 
 function updatePlaygroundCards(playground, cols=DEF_COLS, rows=DEF_ROWS){
     while(playground.firstChild){
@@ -175,10 +227,19 @@ function preLastElementOfArray(array){return array[array.length-2]}
 function observeVictory(){
     const allUnlockedElements = document.getElementsByClassName('opened');
     const allCards = document.getElementsByClassName('card');
+    const timerCount = document.getElementsByTagName('span');
     let victory = setInterval(() => {
+        if(timerCount.length > 0){
+            if(+timerCount[0].textContent == 0){
+                alert('Время вышло, вы проиграли');
+                clearInterval(victory);
+            }
+        }
         if(allUnlockedElements.length == allCards.length){
             alert('Ура, победа');
             clearInterval(victory);
         }
     }, 200);
 }
+
+window.createApp = createApp;
