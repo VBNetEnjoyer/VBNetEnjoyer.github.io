@@ -1,8 +1,40 @@
 function countPlaygroundSize(cols, rows){
     return cols*rows;
 }
+
+function createTitle(){
+    const titleNode = document.createElement('div');
+    titleNode.innerHTML = `
+        <div class="title__container">Игра "Пары"</div>
+    `
+    return titleNode;
+}
+
 const DEF_ROWS = 4;
 const DEF_COLS = 4;
+const KEY_FOR_LOCAL_STORAGE = "KEY"
+
+function createData(){
+    // cols rows timer
+    let data = [DEF_COLS, DEF_ROWS, 60];
+    if(localStorage.getItem(KEY_FOR_LOCAL_STORAGE)){
+        data = JSON.parse(localStorage.getItem(KEY_FOR_LOCAL_STORAGE));
+    }
+    
+    function getData(){
+        return data;
+    }
+
+    function updateData(newData){
+        data = newData;
+        localStorage.setItem(KEY_FOR_LOCAL_STORAGE, JSON.stringify(data));
+    }
+
+    return{
+        getData,
+        updateData,
+    }
+}
 
 function createCard(id){
     const card = document.createElement('div');
@@ -19,18 +51,30 @@ function createCard(id){
     return card;
 }
 
-function createTimer(){
+function createTimer(data){
     const timerWrapper = document.createElement('div');
     const timerCheckBox = document.createElement('input');
     const timerCheckBoxLabel = document.createElement('label');
+    const timerSelector = document.createElement('select');
     
     timerCheckBoxLabel.setAttribute('for','timerCheckBox');
     timerCheckBoxLabel.textContent = 'Включить таймер';
+
+    for(let i = 10; i < 130; i+=10){
+        const option = document.createElement('option');
+        option.value = i;
+        if(i == data.getData()[2]){
+            option.setAttribute('selected', true);
+        }
+        option.textContent = i;
+        timerSelector.append(option);
+    }
 
     timerWrapper.style.cssText= `
         display: flex;
         justify-content: center;
         align-items: center;
+        margin-top: 10px;
     `;
 
     timerCheckBox.type = 'checkbox';
@@ -39,8 +83,9 @@ function createTimer(){
 
     timerWrapper.append(timerCheckBox);
     timerWrapper.append(timerCheckBoxLabel);
+    timerWrapper.append(timerSelector);
 
-    function startTimer(){
+    function startTimer(count){
         while(timerWrapper.firstChild){
             timerWrapper.removeChild(timerWrapper.firstChild)
         }
@@ -48,7 +93,7 @@ function createTimer(){
         const timerCounter = document.createElement('span');
         timerText.textContent = `Таймер: `;
         timerText.append(timerCounter);
-        timerCounter.textContent = 60;
+        timerCounter.textContent = count;
         let timerInterval = setInterval(()=>{
             if(+timerCounter.textContent == 1) clearInterval(timerInterval);
             timerCounter.textContent = +timerCounter.textContent - 1;
@@ -57,12 +102,13 @@ function createTimer(){
         timerWrapper.append(timerText);
     }
     function hideTimer(){
-        timerWrapper.style.display = 'none'
+        timerWrapper.style.display = 'none';
     }
 
     return{
         timerWrapper,
         timerCheckBox,
+        timerSelector,
         startTimer,
         hideTimer,
     }
@@ -100,6 +146,7 @@ function checkPressedCards(){
     markCardsAsUncorrect(pressedCards);
 }
 
+
 function markCardsAsUncorrect(elementsToHide){
     for(let element of elementsToHide){
         element.classList.remove('pressed');
@@ -129,89 +176,91 @@ function createNumbersForCard(playgroundSize){
     return newNumbers;
 }
 
-function createSettings(){
+function createSettings(data){
     const settingsContainer = document.createElement('div');
     settingsContainer.classList.add('settings');
 
     const colsSettings = document.createElement('select');
     colsSettings.id = 'cols-settings';
+
     const colsLabel = document.createElement('label');
     colsLabel.setAttribute('for','cols-settings');
     colsLabel.textContent = "Выберите количество столбцов";
+
     const rowsSettings = document.createElement('select');
     rowsSettings.id = 'rows-settings';
+
     const rowsLabel = document.createElement('label');
     rowsLabel.setAttribute('for','rows-settings');
     rowsLabel.textContent = "Выберите количество строк";
-    const saveButton = document.createElement('button');
-    saveButton.textContent = "Save and start";
 
-    const rowsAndColsElements = [2,3,4,5,6,7,8,9,10];
+    const saveButton = document.createElement('button');
+    saveButton.textContent = "Сохранить и запустить";
+
+    const selectorsWrapper = document.createElement('div');
+    selectorsWrapper.classList.add('settings__selectors-body');
+
+    const settingsBody = document.createElement('div');
+    settingsBody.classList.add('settings__body');
+
+    const rowsAndColsElements = [2,4,6,8,10];
     for(let element of rowsAndColsElements){
         const option = document.createElement('option');
         option.textContent = element;
         option.value = element;
-        if(element == 4){
+        if(element == data.getData()[0]){
+            option.setAttribute('selected',true);
+        }
+        colsSettings.append(option.cloneNode(true));
+    }
+    for(let element of rowsAndColsElements){
+        const option = document.createElement('option');
+        option.textContent = element;
+        option.value = element;
+        if(element == data.getData()[1]){
             option.setAttribute('selected',true);
         }
         rowsSettings.append(option.cloneNode(true));
-        colsSettings.append(option.cloneNode(true));
     }
 
-    settingsContainer.append(rowsLabel);
-    settingsContainer.append(rowsSettings);
-    settingsContainer.append(colsLabel);
-    settingsContainer.append(colsSettings);
-    settingsContainer.append(saveButton);
+    selectorsWrapper.append(rowsLabel);
+    selectorsWrapper.append(rowsSettings);
+    selectorsWrapper.append(colsLabel);
+    selectorsWrapper.append(colsSettings);
+    settingsBody.append(selectorsWrapper);
+    settingsBody.append(saveButton);
+    settingsContainer.append(settingsBody);
+
+    function hideSettings(){
+        selectorsWrapper.style.display = "none";
+    }
 
     return{
         settingsContainer,
         rowsSettings,
         colsSettings,
         saveButton,
+        hideSettings,
     }
 }
 
-function createApp(){
-    const playground = createPlayground();
-    const settings = createSettings();
-    const app = document.querySelector('#app');
-    const timer = createTimer();
-
-    settings.settingsContainer.addEventListener(`click`,(e)=>{
-        if(e.target.closest('button')){
-            let rowsValue = settings.rowsSettings.value;
-            let rowsStringValue = '';
-            let colsValue = settings.colsSettings.value;
-            let colsStringValue = '';
-            for(let i = 0; i < rowsValue; i++){
-                rowsStringValue = rowsStringValue+"1fr ";
-            }
-            for(let i = 0; i < colsValue; i++){
-                colsStringValue = colsStringValue+"1fr ";
-            }
-            playground.style.gridTemplateRows = rowsStringValue.trim();
-            playground.style.gridTemplateColumns = colsStringValue.trim();
-            timer.timerCheckBox.checked ? timer.startTimer() : timer.hideTimer();
-            updatePlaygroundCards(playground, colsValue, rowsValue);
-        }
-    })
-    
-    updatePlaygroundCards(playground);
-    settings.settingsContainer.append(timer.timerWrapper);
-    app.append(settings.settingsContainer);
-    app.append(playground);
-    createNumbersForCard();
-    observeVictory();
-}
-
-
-function updatePlaygroundCards(playground, cols=DEF_COLS, rows=DEF_ROWS){
+function updatePlaygroundCards(playground, cols=DEF_COLS, rows=DEF_ROWS, addCards=true){
     while(playground.firstChild){
         playground.removeChild(playground.firstChild);
     }
     let playgroundSize = countPlaygroundSize(cols, rows);
     let numbersForCards = createNumbersForCard(playgroundSize);
+    let rowsStringValue = '';
+    let colsStringValue = '';
+    for(let i = 0; i < rows; i++){
+        rowsStringValue = rowsStringValue+"1fr ";
+    }
+    for(let i = 0; i < cols; i++){
+        colsStringValue = colsStringValue+"1fr ";
+    }
+    playground.style.gridTemplateRows = rowsStringValue.trim();
+    playground.style.gridTemplateColumns = colsStringValue.trim();
+    if(!addCards) return;
     for(let i in numbersForCards){
         let id = {number:numbersForCards[i]};
         playground.append(createCard(id));
@@ -229,17 +278,121 @@ function observeVictory(){
     const allCards = document.getElementsByClassName('card');
     const timerCount = document.getElementsByTagName('span');
     let victory = setInterval(() => {
+        if(allCards.length == 0) return;
         if(timerCount.length > 0){
             if(+timerCount[0].textContent == 0){
-                alert('Время вышло, вы проиграли');
+                showFinallDialog(false);
                 clearInterval(victory);
             }
         }
         if(allUnlockedElements.length == allCards.length){
-            alert('Ура, победа');
+            showFinallDialog(true);
             clearInterval(victory);
         }
     }, 200);
+}
+
+function showFinallDialog(isWin){
+    const finallDialog = createFinallDialog(isWin);
+    const finallDialogNode = finallDialog.finallDialogWrapper;
+    document.body.append(finallDialogNode); 
+    finallDialog.showDialog();
+}
+
+function createFinallDialog(isWin){
+    const finallDialogWrapper = document.createElement('div');
+    finallDialogWrapper.classList.add('finall-dialog');
+
+    const finallDialogBody = document.createElement('div');
+    finallDialogBody.classList.add('finall-dialog__body');
+
+    const finallDialogBackground = document.createElement('div');
+    finallDialogBackground.classList.add('finall-dialog__background');
+    
+    const finallDialogTitle = document.createElement('div');
+    finallDialogTitle.classList.add('finall-dialog__title');
+
+    const finallDialogText = document.createElement('div');
+    finallDialogText.classList.add('finall-dialog__text');
+
+    const finallDialogButton = document.createElement('button');
+    finallDialogButton.classList.add('finall-dialog__button');
+    finallDialogButton.textContent = "Главное меню";
+
+    if(isWin){
+        finallDialogTitle.textContent = "Победа";
+        finallDialogTitle.classList.add('green');
+        finallDialogText.textContent = `Поздравля вы нашли все пары. 
+        Нажмите на кнопку что бы вернуться в главное меню`;
+    } else {
+        finallDialogTitle.textContent = "Поражение";
+        finallDialogTitle.classList.add('red');
+        finallDialogText.textContent = `Время вышло. Вы не смогли найти все пары за отведенное время. 
+        Нажмите на кнопку что бы вернуться в главное меню`;
+    }
+
+    finallDialogBody.append(finallDialogTitle);
+    finallDialogBody.append(finallDialogText);
+    finallDialogBody.append(finallDialogButton);
+
+    finallDialogWrapper.append(finallDialogBody);
+    finallDialogWrapper.append(finallDialogBackground);
+
+    finallDialogWrapper.addEventListener(`click`,(e)=>{
+        if(e.target.closest('.finall-dialog__button')){
+            location.reload();
+        }
+        if(e.target.closest('.finall-dialog__background')){
+            finallDialogBody.style.animationName = "finall-dialog-background";
+            setTimeout(()=>{
+                finallDialogBody.style.animationName = "none";
+            }, 500)
+        }
+    })
+
+    function showDialog(){
+        finallDialogWrapper.style.display = 'block';
+    }
+
+    return{
+        finallDialogWrapper,
+        showDialog,
+    }
+}
+
+function createApp(){
+    const data = createData();
+    const playground = createPlayground();
+    const settings = createSettings(data);
+    const app = document.querySelector('#app');
+    const timer = createTimer(data); 
+    const titleNode = createTitle();
+    
+    settings.settingsContainer.addEventListener(`click`,(e)=>{
+        if(e.target.closest('.isRestart')){
+            location.reload();
+        }
+        if(e.target.closest('button')){
+            let rowsValue = settings.rowsSettings.value;
+            let colsValue = settings.colsSettings.value;
+            timer.timerCheckBox.checked ? timer.startTimer(timer.timerSelector.value) : timer.hideTimer();
+            updatePlaygroundCards(playground, colsValue, rowsValue);
+            data.updateData([colsValue, rowsValue, timer.timerSelector.value]);
+            checkPressedCards();
+            settings.saveButton.classList.add("isRestart");
+            settings.saveButton.textContent = "< Главное меню";
+            settings.hideSettings();
+            titleNode.style.display = "none";
+        }
+    })
+    
+    updatePlaygroundCards(playground, data.getData()[0], data.getData()[1], false);
+    settings.settingsContainer.append(timer.timerWrapper);
+    app.append(settings.settingsContainer);
+    app.append(playground);
+    app.before(titleNode);
+    createNumbersForCard();
+    observeVictory();
 }
 
 window.createApp = createApp;

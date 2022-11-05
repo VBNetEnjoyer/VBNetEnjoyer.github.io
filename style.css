@@ -13,6 +13,15 @@ body{
     align-items: center;
     padding: 0 10px 20px 10px;
 }
+.title__container{
+    max-width: 1230px;
+    margin: 0 auto;
+    padding: 10px 10px 10px 10px;
+    border-bottom: 1px black solid;
+    text-align: center;
+    font-size: 48px;
+    font-weight: 700;
+}
 select{
     margin: 0 10px;
     font-weight: 700;
@@ -20,6 +29,12 @@ select{
 }
 .settings{
     padding: 20px;
+}
+.settings__selectors-body, .settings__body{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
 }
 .card{
     box-shadow: 0 0 5px black;
@@ -76,4 +91,70 @@ button{
 }
 button:hover{
     background-color: rgb(77, 77, 180);
+}
+.finall-dialog {
+    display: none;
+}
+.finall-dialog__background{
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: white;
+    width: 100%;
+    height: 100%;
+    opacity: 0.2;
+}
+.finall-dialog__body{
+    box-shadow: 0 0 5px black;
+    height: 40%;
+    width: 40%;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    background: white;
+    padding: 20px;
+    z-index: 1000;
+
+    animation-duration: 300ms;
+}
+
+.finall-dialog__title {
+    font-size: 200%;
+    margin-bottom: 8px;
+    padding: 0 0 8px 0;
+    border-bottom: 1px black solid;
+}
+.finall-dialog__text {
+    flex: 1 1 auto;
+}
+.restart-btn {
+    align-self: flex-end;
+}
+
+@keyframes finall-dialog-background{
+    0%{
+        left: 50%;
+    }
+    25%{
+        left: 51%;
+    }
+    50%{
+        left: 49%;
+    }
+    75%{
+        left: 51%;
+    }
+    100%{
+        left: 50%;
+    }
+}
+
+.green{
+    color: forestgreen;
+}
+.red{
+    color: red;
 }
