@@ -1,6 +1,7 @@
 body{
     font-size: 24px;
     font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+    user-select: none;
 }
 .container{
     height: 100%;

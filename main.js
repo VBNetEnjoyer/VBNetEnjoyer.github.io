@@ -7,7 +7,7 @@ const DEF_COLS = 4;
 function createCard(id){
     const card = document.createElement('div');
     for(let [key,value] of Object.entries(id)){
-        card.id = `${key}:${value}`
+        card.id = `${key}:${value}`;
     }
 
     card.classList.add('card');
@@ -26,7 +26,7 @@ function createPlayground(){
 
     playground.addEventListener('click', function(e){
         if(e.target.closest('.card.opened')){
-            return
+            return;
         }
         if(e.target.closest('.card')){
             e.target.closest('.card').classList.toggle('pressed');
@@ -41,16 +41,16 @@ function createPlayground(){
 
 let pressedCardsCount = 0;
 function checkPressedCards(){
-    pressedCardsCount++
+    pressedCardsCount++;
     let pressedCards = document.querySelectorAll('.pressed');
 
     if(pressedCards.length == 0) pressedCardsCount = 0;
     if((pressedCardsCount != 2) || (pressedCards.length != 2)) return;
     if(lastElementOfArray(pressedCards).id == preLastElementOfArray(pressedCards).id){
-        checkCardsAsOpened(pressedCards)
+        checkCardsAsOpened(pressedCards);
     }
     pressedCardsCount = 0;
-    hideElements(pressedCards)
+    hideElements(pressedCards);
 }
 function hideElements(elementsToHide){
     for(let element of elementsToHide){
@@ -70,8 +70,7 @@ function checkCardsAsOpened(elementToCheck){
 
 function createNumbersForCard(playgroundSize){        
     let numbers = [];
-    const arraySize = playgroundSize/2
-    console.log(arraySize)
+    const arraySize = playgroundSize/2;
     for(let i = 0; i < arraySize; i++){
         let num = Math.round(Math.random()*100);
         numbers.push(num);
@@ -88,14 +87,14 @@ function createSettings(){
     colsSettings.id = 'cols-settings';
     const colsLabel = document.createElement('label');
     colsLabel.for = 'cols-settings';
-    colsLabel.textContent = "Выберите количество столбцов"
+    colsLabel.textContent = "Выберите количество столбцов";
     const rowsSettings = document.createElement('select');
     rowsSettings.id = 'cols-settings';
     const rowsLabel = document.createElement('label');
     rowsLabel.for = 'rows-settings';
     rowsLabel.textContent = "Выберите количество строк";
     const saveButton = document.createElement('button');
-    saveButton.textContent = "SAVE"
+    saveButton.textContent = "SAVE";
 
     const rowsAndColsElements = [2,3,4,5,6,7,8,9,10];
     for(let element of rowsAndColsElements){
@@ -103,7 +102,7 @@ function createSettings(){
         option.textContent = element;
         option.value = element;
         if(element == 4){
-            option.setAttribute('selected',true)
+            option.setAttribute('selected',true);
         }
         rowsSettings.append(option.cloneNode(true));
         colsSettings.append(option.cloneNode(true));
@@ -143,12 +142,12 @@ function createApp(){
             }
             playground.style.gridTemplateRows = rowsStringValue.trim();
             playground.style.gridTemplateColumns = colsStringValue.trim();
-            updatePlaygroundCards(playground, colsValue, rowsValue)
+            updatePlaygroundCards(playground, colsValue, rowsValue);
         }
     })
     
-    updatePlaygroundCards(playground)
-    app.append(settings.settingsContainer)
+    updatePlaygroundCards(playground);
+    app.append(settings.settingsContainer);
     app.append(playground);
     createNumbersForCard();
     observeVictory();
@@ -167,7 +166,7 @@ function updatePlaygroundCards(playground, cols=DEF_COLS, rows=DEF_ROWS){
     }
 }
 
-function shuffleArray(array){return array.sort((a, b) => 0.5 - Math.random())};
+function shuffleArray(array){return array.sort((a, b) => 0.5 - Math.random())}
 
 function lastElementOfArray(array){return array[array.length-1]}
 
@@ -175,7 +174,7 @@ function preLastElementOfArray(array){return array[array.length-2]}
 
 function observeVictory(){
     const allUnlockedElements = document.getElementsByClassName('opened');
-    const allCards = document.getElementsByClassName('card')
+    const allCards = document.getElementsByClassName('card');
     let victory = setInterval(() => {
         if(allUnlockedElements.length == allCards.length){
             alert('Ура, победа');
